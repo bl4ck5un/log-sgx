@@ -1,6 +1,9 @@
 //! Structured keys.
 
 use std::borrow::Borrow;
+#[cfg(feature = "mesalock_sgx")]
+use std::prelude::v1::*;
+
 use std::cmp;
 use std::fmt;
 use std::hash;

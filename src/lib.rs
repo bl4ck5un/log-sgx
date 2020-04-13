@@ -270,13 +270,24 @@
 )]
 #![warn(missing_docs)]
 #![deny(missing_debug_implementations)]
-#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
+#![cfg_attr(any(not(feature = "std"),
+                all(feature = "mesalock_sgx", not(target_env = "sgx"))),
+            no_std)]
 // When compiled for the rustc compiler itself we want to make sure that this is
 // an unstable crate
 #![cfg_attr(rustbuild, feature(staged_api, rustc_private))]
 #![cfg_attr(rustbuild, unstable(feature = "rustc_private", issue = "27812"))]
 
-#[cfg(all(not(feature = "std"), not(test)))]
+#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+
+#[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
+#[macro_use]
+extern crate sgx_tstd as std;
+
+#[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
+use std::prelude::v1::*;
+
+#[cfg(not(feature = "std"))]
 extern crate core as std;
 
 #[macro_use]
@@ -1408,7 +1419,7 @@ pub unsafe fn set_logger_racy(logger: &'static dyn Log) -> Result<(), SetLoggerE
 ///
 /// [`set_logger`]: fn.set_logger.html
 #[allow(missing_copy_implementations)]
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SetLoggerError(());
 
 impl fmt::Display for SetLoggerError {
@@ -1425,7 +1436,7 @@ impl error::Error for SetLoggerError {}
 ///
 /// [`from_str`]: https://doc.rust-lang.org/std/str/trait.FromStr.html#tymethod.from_str
 #[allow(missing_copy_implementations)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct ParseLevelError(());
 
 impl fmt::Display for ParseLevelError {
